@@ -8,49 +8,42 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Property } from '@/types/property';
-import { usePropertyStore } from '@/store/usePropertyStore';
-import { formatEther, formatWalletAddress } from '@/utils/ethereum';
+import { formatEther, formatWalletAddress, weiToEther, etherToWei } from '@/utils/ethereum';
 import { Building2, User, Calendar, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAccount } from 'wagmi';
+import { useRentProperty } from '@/hooks/usePropertyRental';
 
 interface PropertyCardProps {
   property: Property;
 }
 
 export function PropertyCard({ property }: PropertyCardProps) {
-  const { walletAddress, rentProperty, isWalletConnected } = usePropertyStore();
+  const { address, isConnected } = useAccount();
+  const { rentProperty, isPending, isConfirming } = useRentProperty();
   const [rentalDays, setRentalDays] = useState('1');
-  const [isRenting, setIsRenting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const isOwner = walletAddress === property.owner;
-  const canRent = isWalletConnected && !isOwner && property.isAvailable;
+  const isOwner = address === property.owner;
+  const canRent = isConnected && !isOwner && property.isAvailable;
   
-  const totalCost = property.dailyRate * parseInt(rentalDays || '1');
+  // Converter dailyRate de number para bigint para cálculos
+  const dailyRateWei = BigInt(property.dailyRate);
+  const totalCostWei = dailyRateWei * BigInt(parseInt(rentalDays || '1'));
+  const totalCostEth = weiToEther(totalCostWei);
 
   const handleRent = async () => {
     if (!canRent) return;
     
-    setIsRenting(true);
     try {
-      rentProperty({
-        propertyId: property.id,
-        renterAddress: walletAddress!,
-        days: parseInt(rentalDays),
-        totalAmount: totalCost,
-      });
-      
-      toast.success('Imóvel alugado com sucesso!', {
-        description: `Você alugou este imóvel por ${rentalDays} dia(s). Total: ${formatEther(totalCost)}`
-      });
+      await rentProperty(
+        property.id,
+        parseInt(rentalDays),
+        totalCostEth
+      );
       setIsDialogOpen(false);
     } catch (error) {
       console.error('Erro ao alugar imóvel:', error);
-      toast.error('Erro ao alugar imóvel', {
-        description: 'Tente novamente em alguns instantes.'
-      });
-    } finally {
-      setIsRenting(false);
     }
   };
 
@@ -93,7 +86,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
         <div className="flex items-center space-x-2">
           <DollarSign className="h-4 w-4 text-muted-foreground" />
           <span className="font-semibold text-lg text-primary">
-            {formatEther(property.dailyRate)}/dia
+            {formatEther(dailyRateWei)}/dia
           </span>
         </div>
 
@@ -120,7 +113,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
       </CardContent>
 
       <CardFooter>
-        {!isWalletConnected ? (
+        {!isConnected ? (
           <Button disabled className="w-full">
             Conecte sua carteira para alugar
           </Button>
@@ -159,7 +152,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Valor por dia:</span>
-                    <span>{formatEther(property.dailyRate)}</span>
+                    <span>{formatEther(dailyRateWei)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Quantidade de dias:</span>
@@ -167,7 +160,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
                   </div>
                   <div className="flex justify-between font-semibold text-lg border-t pt-2">
                     <span>Total:</span>
-                    <span className="text-primary">{formatEther(totalCost)}</span>
+                    <span className="text-primary">{totalCostEth.toFixed(4)} ETH</span>
                   </div>
                 </div>
 
@@ -181,10 +174,10 @@ export function PropertyCard({ property }: PropertyCardProps) {
                   </Button>
                   <Button
                     onClick={handleRent}
-                    disabled={isRenting}
+                    disabled={isPending || isConfirming}
                     className="flex-1"
                   >
-                    {isRenting ? 'Alugando...' : 'Confirmar Aluguel'}
+                    {isPending || isConfirming ? 'Processando...' : 'Confirmar Aluguel'}
                   </Button>
                 </div>
               </div>

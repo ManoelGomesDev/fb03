@@ -7,13 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { usePropertyStore } from '@/store/usePropertyStore';
-import { etherToWei } from '@/utils/ethereum';
 import { Building2, DollarSign, Calendar, Image } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAccount } from 'wagmi';
+import { useRegisterProperty } from '@/hooks/usePropertyRental';
 
 export function PropertyRegistration() {
-  const { addProperty, isWalletConnected, error } = usePropertyStore();
+  const { isConnected } = useAccount();
+  const { registerProperty, isPending, isConfirming, isSuccess, error } = useRegisterProperty();
   const [formData, setFormData] = useState({
     description: '',
     dailyRate: '',
@@ -21,29 +22,41 @@ export function PropertyRegistration() {
     imageUrl: '',
     propertyType: ''
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!isWalletConnected) {
+    if (!isConnected) {
       toast.error('Conecte sua carteira antes de cadastrar um imóvel');
       return;
     }
 
-    setIsSubmitting(true);
+    // Validação dos campos obrigatórios
+    if (!formData.description.trim()) {
+      toast.error('Descrição é obrigatória');
+      return;
+    }
+    if (!formData.propertyType) {
+      toast.error('Tipo do imóvel é obrigatório');
+      return;
+    }
+    if (!formData.dailyRate || parseFloat(formData.dailyRate) <= 0) {
+      toast.error('Valor da diária deve ser maior que zero');
+      return;
+    }
+    if (!formData.availableDays || parseInt(formData.availableDays) <= 0) {
+      toast.error('Dias disponíveis deve ser maior que zero');
+      return;
+    }
     
     try {
-      const dailyRateInWei = etherToWei(parseFloat(formData.dailyRate));
-      
-      addProperty({
-        description: formData.description,
-        dailyRate: dailyRateInWei,
-        availableDays: parseInt(formData.availableDays),
-        imageUrl: formData.imageUrl,
-        propertyType: formData.propertyType,
-        isAvailable: true,
-      });
+      await registerProperty(
+        formData.description,
+        formData.imageUrl || '',
+        formData.propertyType,
+        parseFloat(formData.dailyRate),
+        parseInt(formData.availableDays)
+      );
 
       // Reset form
       setFormData({
@@ -53,17 +66,8 @@ export function PropertyRegistration() {
         imageUrl: '',
         propertyType: ''
       });
-
-      toast.success('Imóvel cadastrado com sucesso!', {
-        description: 'Seu imóvel já está disponível para aluguel na plataforma.'
-      });
     } catch (error) {
       console.error('Erro ao cadastrar imóvel:', error);
-      toast.error('Erro ao cadastrar imóvel', {
-        description: 'Verifique os dados e tente novamente.'
-      });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -71,7 +75,27 @@ export function PropertyRegistration() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  if (!isWalletConnected) {
+  // Verificar se o formulário está válido (simplificado)
+  const isFormValid = Boolean(
+    formData.description?.trim() &&
+    formData.propertyType &&
+    formData.dailyRate &&
+    formData.availableDays &&
+    parseFloat(formData.dailyRate) > 0 &&
+    parseInt(formData.availableDays) > 0
+  );
+
+  // Debug para identificar problema
+  console.log('DEBUG - Form validation:', {
+    description: formData.description?.trim(),
+    propertyType: formData.propertyType,
+    dailyRate: formData.dailyRate,
+    availableDays: formData.availableDays,
+    isFormValid,
+    isConnected
+  });
+
+  if (!isConnected) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-md mx-auto">
@@ -102,7 +126,7 @@ export function PropertyRegistration() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Tipo de Imóvel */}
             <div className="space-y-2">
-              <Label htmlFor="propertyType">Tipo de Imóvel</Label>
+              <Label htmlFor="propertyType">Tipo de Imóvel <span className="text-red-500">*</span></Label>
               <Select 
                 value={formData.propertyType} 
                 onValueChange={(value) => handleInputChange('propertyType', value)}
@@ -122,7 +146,7 @@ export function PropertyRegistration() {
 
             {/* Descrição */}
             <div className="space-y-2">
-              <Label htmlFor="description">Descrição do Imóvel</Label>
+              <Label htmlFor="description">Descrição do Imóvel <span className="text-red-500">*</span></Label>
               <Textarea
                 id="description"
                 placeholder="Descreva as características principais do imóvel..."
@@ -137,7 +161,7 @@ export function PropertyRegistration() {
             <div className="space-y-2">
               <Label htmlFor="dailyRate" className="flex items-center space-x-2">
                 <DollarSign className="h-4 w-4" />
-                <span>Valor da Diária (ETH)</span>
+                <span>Valor da Diária (ETH) <span className="text-red-500">*</span></span>
               </Label>
               <Input
                 id="dailyRate"
@@ -154,7 +178,7 @@ export function PropertyRegistration() {
             <div className="space-y-2">
               <Label htmlFor="availableDays" className="flex items-center space-x-2">
                 <Calendar className="h-4 w-4" />
-                <span>Dias Disponíveis para Locação</span>
+                <span>Dias Disponíveis para Locação <span className="text-red-500">*</span></span>
               </Label>
               <Input
                 id="availableDays"
@@ -203,17 +227,35 @@ export function PropertyRegistration() {
             {/* Mensagem de erro */}
             {error && (
               <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-                {error}
+                {error.message || 'Erro ao cadastrar propriedade'}
               </div>
             )}
+
+            {/* Aviso sobre validação */}
+            {!isFormValid && (
+              <div className="p-3 text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-md">
+                Preencha todos os campos obrigatórios para habilitar o cadastro
+              </div>
+            )}
+
+            {/* Debug info */}
+            <div className="text-xs text-gray-500 space-y-1 p-3 bg-gray-50 rounded-md">
+              <div>🔗 Conectado: {isConnected ? '✅' : '❌'}</div>
+              <div>📝 Descrição: {formData.description?.trim() ? '✅' : '❌'}</div>
+              <div>🏠 Tipo: {formData.propertyType ? '✅' : '❌'}</div>
+              <div>💰 Diária: {formData.dailyRate && parseFloat(formData.dailyRate) > 0 ? '✅' : '❌'}</div>
+              <div>📅 Dias: {formData.availableDays && parseInt(formData.availableDays) > 0 ? '✅' : '❌'}</div>
+              <div>✅ Form válido: {isFormValid ? '✅' : '❌'}</div>
+              <div>⏳ Processando: {isPending || isConfirming ? '✅' : '❌'}</div>
+            </div>
 
             {/* Botão de envio */}
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={isSubmitting}
+              disabled={!isFormValid || isPending || isConfirming}
             >
-              {isSubmitting ? 'Cadastrando...' : 'Cadastrar Imóvel'}
+              {isPending || isConfirming ? 'Cadastrando...' : 'Cadastrar Imóvel'}
             </Button>
           </form>
         </CardContent>

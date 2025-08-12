@@ -1,9 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { usePropertyStore } from '@/store/usePropertyStore';
-import { Building, Search, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { Search, Plus } from 'lucide-react';
+import { useAccount } from 'wagmi';
 
 interface NavigationProps {
   activeTab: 'browse' | 'register';
@@ -11,7 +10,7 @@ interface NavigationProps {
 }
 
 export function Navigation({ activeTab, onTabChange }: NavigationProps) {
-  const { isWalletConnected } = usePropertyStore();
+  const { isConnected } = useAccount();
 
   return (
     <nav className="border-b bg-card">
@@ -29,7 +28,7 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
           <Button
             variant={activeTab === 'register' ? 'default' : 'ghost'}
             onClick={() => onTabChange('register')}
-            disabled={!isWalletConnected}
+            disabled={!isConnected}
             className="flex items-center space-x-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
           >
             <Plus className="h-4 w-4" />

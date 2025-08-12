@@ -2,14 +2,44 @@
 
 import { usePropertyStore } from '@/store/usePropertyStore';
 import { PropertyCard } from './PropertyCard';
-import { Building2, Search } from 'lucide-react';
+import { Building2, Search, Loader2 } from 'lucide-react';
+import { useGetAllProperties } from '@/hooks/usePropertyRental';
 
 export function PropertyListing() {
-  const { getAvailableProperties, getUnavailableProperties } = usePropertyStore();
+  const { filterAvailableProperties, filterUnavailableProperties } = usePropertyStore();
+  const { data: properties, isLoading, error } = useGetAllProperties();
   
-  const availableProperties = getAvailableProperties();
-  const unavailableProperties = getUnavailableProperties();
-  const totalProperties = availableProperties.length + unavailableProperties.length;
+  const availableProperties = filterAvailableProperties(properties);
+  const unavailableProperties = filterUnavailableProperties(properties);
+  const totalProperties = properties.length;
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center max-w-md mx-auto">
+          <Loader2 className="h-16 w-16 mx-auto text-muted-foreground mb-4 animate-spin" />
+          <h3 className="text-xl font-semibold mb-2">Carregando imóveis...</h3>
+          <p className="text-muted-foreground">
+            Buscando dados na blockchain...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center max-w-md mx-auto">
+          <Building2 className="h-16 w-16 mx-auto text-destructive mb-4" />
+          <h3 className="text-xl font-semibold mb-2">Erro ao carregar imóveis</h3>
+          <p className="text-muted-foreground mb-4">
+            Não foi possível carregar os dados da blockchain. Tente novamente.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (totalProperties === 0) {
     return (

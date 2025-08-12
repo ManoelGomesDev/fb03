@@ -14,6 +14,9 @@
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-select": "^2.2.5",
     "@radix-ui/react-slot": "^1.2.3",
+    "@tanstack/react-query": "^5.84.2",
+    "@wagmi/connectors": "^5.9.2",
+    "@wagmi/core": "^2.19.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.539.0",
@@ -24,6 +27,8 @@
     "react-hook-form": "^7.62.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
+    "viem": "^2.33.3",
+    "wagmi": "^2.16.2",
     "zod": "^4.0.17",
     "zustand": "^5.0.7"
   },
