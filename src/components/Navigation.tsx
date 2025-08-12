@@ -1,16 +1,18 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Crown } from 'lucide-react';
 import { useAccount } from 'wagmi';
+import { useIsContractOwner } from '@/hooks/usePropertyRental';
 
 interface NavigationProps {
-  activeTab: 'browse' | 'register';
-  onTabChange: (tab: 'browse' | 'register') => void;
+  activeTab: 'browse' | 'register' | 'admin';
+  onTabChange: (tab: 'browse' | 'register' | 'admin') => void;
 }
 
 export function Navigation({ activeTab, onTabChange }: NavigationProps) {
   const { isConnected } = useAccount();
+  const { isOwner } = useIsContractOwner();
 
   return (
     <nav className="border-b bg-card">
@@ -34,6 +36,18 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
             <Plus className="h-4 w-4" />
             <span>Cadastrar Imóvel</span>
           </Button>
+
+          {/* Painel Admin - apenas para o owner */}
+          {isOwner && (
+            <Button
+              variant={activeTab === 'admin' ? 'default' : 'ghost'}
+              onClick={() => onTabChange('admin')}
+              className="flex items-center space-x-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:from-yellow-600 hover:to-orange-600"
+            >
+              <Crown className="h-4 w-4" />
+              <span>Admin</span>
+            </Button>
+          )}
         </div>
       </div>
     </nav>

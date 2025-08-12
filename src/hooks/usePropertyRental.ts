@@ -176,3 +176,65 @@ export function useGetProperty(propertyId?: string) {
     },
   })
 }
+
+// Hook para verificar se a carteira conectada é o owner do contrato
+export function useIsContractOwner() {
+  const { address } = useAccount()
+  
+  const { data: contractOwner } = useReadContract({
+    address: PROPERTY_RENTAL_ADDRESS,
+    abi: PROPERTY_RENTAL_ABI,
+    functionName: 'owner',
+    chainId: sepolia.id,
+  })
+  
+  return {
+    isOwner: address && contractOwner && address.toLowerCase() === contractOwner.toLowerCase(),
+    contractOwner
+  }
+}
+
+// Hook para sacar taxas da plataforma
+export function useCollectPlatformFees() {
+  const { writeContract, data: hash, isPending, error } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash,
+  })
+
+  const collectFees = async () => {
+    try {
+      writeContract({
+        address: PROPERTY_RENTAL_ADDRESS,
+        abi: PROPERTY_RENTAL_ABI,
+        functionName: 'collectPlatformFees',
+        chainId: sepolia.id,
+      })
+    } catch (err) {
+      console.error('Erro ao coletar taxas:', err)
+      toast.error('Erro ao coletar taxas da plataforma')
+    }
+  }
+
+  // Mostrar toast quando a transação for confirmada
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success('Taxas coletadas com sucesso!')
+    }
+  }, [isSuccess])
+
+  // Mostrar toast se houver erro
+  useEffect(() => {
+    if (error) {
+      toast.error('Erro ao coletar taxas: ' + error.message)
+    }
+  }, [error])
+
+  return {
+    collectFees,
+    hash,
+    isPending,
+    isConfirming,
+    isSuccess,
+    error,
+  }
+}
