@@ -32,12 +32,13 @@ export function AdminPanel() {
         <div className="flex items-center space-x-2 mb-2">
           <Crown className="h-6 w-6 text-yellow-500" />
           <h2 className="text-2xl font-bold">Painel Administrativo</h2>
-          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+          <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
+            <Crown className="h-3 w-3 mr-1" />
             Owner
           </Badge>
         </div>
         <p className="text-muted-foreground">
-          Controle da plataforma de aluguel de imóveis
+          Controle da plataforma de aluguel de imóveis • Acesso exclusivo do proprietário do contrato
         </p>
       </div>
 
@@ -142,14 +143,20 @@ export function AdminPanel() {
             <Button
               onClick={handleCollectFees}
               disabled={platformBalance === BigInt(0) || isPending || isConfirming}
-              className="w-full md:w-auto flex items-center space-x-2"
+              className={`w-full md:w-auto flex items-center space-x-2 transition-all duration-200 ${
+                platformBalance > BigInt(0) 
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg' 
+                  : ''
+              }`}
               size="lg"
             >
-              <Coins className="h-4 w-4" />
+              <Coins className={`h-4 w-4 ${isPending || isConfirming ? 'animate-spin' : ''}`} />
               <span>
                 {isPending || isConfirming 
-                  ? 'Processando...' 
-                  : `Sacar Taxas (${formatEther(platformBalance)})`
+                  ? 'Processando transação...' 
+                  : platformBalance > BigInt(0)
+                    ? `💰 Sacar ${formatEther(platformBalance)}`
+                    : 'Nenhuma taxa disponível'
                 }
               </span>
             </Button>

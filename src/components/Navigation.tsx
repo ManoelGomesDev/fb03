@@ -42,10 +42,14 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
             <Button
               variant={activeTab === 'admin' ? 'default' : 'ghost'}
               onClick={() => onTabChange('admin')}
-              className="flex items-center space-x-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:from-yellow-600 hover:to-orange-600"
+              className={`flex items-center space-x-2 rounded-none border-b-2 border-transparent ${
+                activeTab === 'admin' 
+                  ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-yellow-400' 
+                  : 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white hover:from-yellow-500 hover:to-orange-500'
+              } shadow-lg transition-all duration-200`}
             >
               <Crown className="h-4 w-4" />
-              <span>Admin</span>
+              <span className="font-semibold">Painel Admin</span>
             </Button>
           )}
         </div>
