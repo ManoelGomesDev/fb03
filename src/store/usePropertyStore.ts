@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { Property, RentalRequest } from '@/types/property';
-import { toast } from 'sonner';
+import { Property } from '@/types/property';
+
 
 interface PropertyState {
   // Estados de UI
@@ -17,7 +17,7 @@ interface PropertyState {
   filterUnavailableProperties: (properties: Property[]) => Property[];
 }
 
-export const usePropertyStore = create<PropertyState>((set, get) => ({
+export const usePropertyStore = create<PropertyState>((set) => ({
   // Estado inicial
   isLoading: false,
   error: null,

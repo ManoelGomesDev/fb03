@@ -20,7 +20,17 @@ export const formatWalletAddress = (address: string): string => {
 };
 
 // Utilitário para converter PropertyStruct do contrato para o tipo do frontend
-export const convertContractPropertyToFrontend = (contractProperty: any) => {
+export const convertContractPropertyToFrontend = (contractProperty: {
+  id: bigint;
+  owner: Address;
+  description: string;
+  imageUrl: string;
+  propertyType: string;
+  dailyRate: bigint;
+  availableDays: bigint;
+  isAvailable: boolean;
+  createdAt: bigint;
+}) => {
   return {
     id: contractProperty.id.toString(),
     owner: contractProperty.owner as Address,

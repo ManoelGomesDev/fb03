@@ -8,11 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Property } from '@/types/property';
-import { formatEther, formatWalletAddress, weiToEther, etherToWei } from '@/utils/ethereum';
-import { Building2, User, Calendar, DollarSign } from 'lucide-react';
-import { toast } from 'sonner';
+import { formatEther, formatWalletAddress, weiToEther } from '@/utils/ethereum';
+import { User, Calendar, DollarSign } from 'lucide-react';
 import { useAccount } from 'wagmi';
 import { useRentProperty } from '@/hooks/usePropertyRental';
+import Image from 'next/image';
 
 interface PropertyCardProps {
   property: Property;
@@ -53,10 +53,11 @@ export function PropertyCard({ property }: PropertyCardProps) {
     }`}>
       {/* Imagem */}
       <div className="relative aspect-video overflow-hidden">
-        <img
-          src={property.imageUrl}
+        <Image
+          src={property.imageUrl || '/placeholder-property.jpg'}
           alt={property.description}
-          className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
+          fill
+          className="object-cover transition-transform duration-200 hover:scale-105"
           onError={(e) => {
             (e.target as HTMLImageElement).src = '/placeholder-property.jpg';
           }}

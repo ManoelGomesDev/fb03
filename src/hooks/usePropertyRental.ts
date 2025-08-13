@@ -1,5 +1,5 @@
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount, useBlockNumber } from 'wagmi'
-import { PROPERTY_RENTAL_ADDRESS, PROPERTY_RENTAL_ABI, type PropertyStruct } from '@/contracts/PropertyRental'
+import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount } from 'wagmi'
+import { PROPERTY_RENTAL_ADDRESS, PROPERTY_RENTAL_ABI } from '@/contracts/PropertyRental'
 import { parseEther } from 'viem'
 import { sepolia } from 'wagmi/chains'
 import { toast } from 'sonner'

@@ -16,12 +16,12 @@ export function AdminPanel() {
     return null; // Não renderiza nada se não for o owner
   }
 
-  const platformBalance = stats ? stats[2] : 0n; // platformBalance é o terceiro valor retornado
+  const platformBalance = stats ? stats[2] : BigInt(0); // platformBalance é o terceiro valor retornado
   const totalProperties = stats ? Number(stats[0]) : 0;
   const totalRentals = stats ? Number(stats[1]) : 0;
 
   const handleCollectFees = async () => {
-    if (platformBalance > 0n) {
+    if (platformBalance > BigInt(0)) {
       await collectFees();
     }
   };
@@ -141,7 +141,7 @@ export function AdminPanel() {
           <div className="flex flex-col space-y-2">
             <Button
               onClick={handleCollectFees}
-              disabled={platformBalance === 0n || isPending || isConfirming}
+              disabled={platformBalance === BigInt(0) || isPending || isConfirming}
               className="w-full md:w-auto flex items-center space-x-2"
               size="lg"
             >
@@ -154,7 +154,7 @@ export function AdminPanel() {
               </span>
             </Button>
             
-            {platformBalance === 0n && (
+            {platformBalance === BigInt(0) && (
               <p className="text-sm text-muted-foreground">
                 Não há taxas disponíveis para saque no momento.
               </p>

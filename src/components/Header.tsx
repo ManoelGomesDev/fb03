@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { formatWalletAddress } from '@/utils/ethereum';
-import { Home, Wallet, ChevronDown } from 'lucide-react';
+import { Home, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { metaMask } from 'wagmi/connectors';

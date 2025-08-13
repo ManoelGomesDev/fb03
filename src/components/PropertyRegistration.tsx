@@ -7,14 +7,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Building2, DollarSign, Calendar, Image } from 'lucide-react';
+import { Building2, DollarSign, Calendar, Image as ImageIcon } from 'lucide-react';
+import Image from 'next/image';
 import { toast } from 'sonner';
 import { useAccount } from 'wagmi';
 import { useRegisterProperty } from '@/hooks/usePropertyRental';
 
 export function PropertyRegistration() {
   const { isConnected } = useAccount();
-  const { registerProperty, isPending, isConfirming, isSuccess, error } = useRegisterProperty();
+  const { registerProperty, isPending, isConfirming, error } = useRegisterProperty();
   const [formData, setFormData] = useState({
     description: '',
     dailyRate: '',
@@ -194,7 +195,7 @@ export function PropertyRegistration() {
             {/* URL da Imagem */}
             <div className="space-y-2">
               <Label htmlFor="imageUrl" className="flex items-center space-x-2">
-                <Image className="h-4 w-4" />
+                <ImageIcon className="h-4 w-4" />
                 <span>URL da Imagem</span>
               </Label>
               <Input
@@ -212,10 +213,11 @@ export function PropertyRegistration() {
               <div className="space-y-2">
                 <Label>Preview da Imagem</Label>
                 <div className="relative aspect-video max-w-xs mx-auto overflow-hidden rounded-lg border">
-                  <img
+                  <Image
                     src={formData.imageUrl}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
+                    alt="Preview do imóvel"
+                    fill
+                    className="object-cover"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
