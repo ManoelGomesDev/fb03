@@ -1,0 +1,13 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+
+# Etherscan API key for verification
+etherscan_api_key = "${ETHERSCAN_API_KEY}"
+
+# RPC URLs
+[rpc_endpoints]
+sepolia = "${SEPOLIA_RPC_URL}"
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
