@@ -240,7 +240,7 @@ export function PropertyRegistration() {
               </div>
             )}
 
-            {/* Debug info */}
+            {/* Debug info
             <div className="text-xs text-gray-500 space-y-1 p-3 bg-gray-50 rounded-md">
               <div>🔗 Conectado: {isConnected ? '✅' : '❌'}</div>
               <div>📝 Descrição: {formData.description?.trim() ? '✅' : '❌'}</div>
@@ -249,7 +249,7 @@ export function PropertyRegistration() {
               <div>📅 Dias: {formData.availableDays && parseInt(formData.availableDays) > 0 ? '✅' : '❌'}</div>
               <div>✅ Form válido: {isFormValid ? '✅' : '❌'}</div>
               <div>⏳ Processando: {isPending || isConfirming ? '✅' : '❌'}</div>
-            </div>
+            </div> */}
 
             {/* Botão de envio */}
             <Button 
